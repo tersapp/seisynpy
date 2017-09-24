@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
+import lasio
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import gridspec
@@ -205,3 +206,53 @@ def digitize_model(rc_int, t_int, t):
             break
 
     return rc
+
+#############################################################
+#岩性分析函数定义
+def thick_cal(data,value,step=0.1524):
+    '''
+    统计列表中某数字连续出现的次数
+    :param data: 1D测井岩性数据列表
+    :param value: 需要统计的岩性数值
+    :param step: 深度采样间隔
+    :return: 返回连续出现的次数，列表
+    '''
+    cur_count=0
+    thick_list=[]
+    for idata in data:
+        if idata==value:
+            cur_count+=1
+        else:
+            if cur_count!=0:
+                thick_list.append(cur_count*step)
+            cur_count=0
+    return thick_list
+def find_pos(data,value):
+    '''
+    找到当前厚度值在data厚度间隔列表中的位置并且返回
+    :param data: 厚度区间列表
+    :param value:当前厚度数值
+    :return: 厚度表中的位置
+    '''
+    if value<data[0]:
+        return 0
+    elif value>=data[-1]:
+        return len(data)
+    for idx in range(0,len(data)-1):
+        if value>=data[idx] and value<data[idx+1]:
+            return idx+1
+def count_cal(data,interval=[1,5,10,15,20,25,30]):
+    '''
+    统计厚度列表data中的数据在interval厚度分类下出现的次数
+    :param data: 厚度列表
+    :param interval: 厚度间隔列表
+    :return: 厚度统计数值列表
+    '''
+    count_list=[0 for i in range(0,len(interval)+1)]
+    min_data=min(data)
+    max_data=max(data)
+    print('min_thick=%4.2f\tmax_thick=%4.2f'%(min_data,max_data))
+    for idata in data:
+        cur_pos=find_pos(interval,idata)
+        count_list[cur_pos]+=1
+    return count_list
